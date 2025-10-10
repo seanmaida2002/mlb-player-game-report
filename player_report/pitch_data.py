@@ -6,7 +6,78 @@ import statsapi
 
 
 def get_opponent(opponent_abr):
-    team = statsapi.lookup_team(opponent_abr)
+    team_codes = {"Arizona Diamondbacks": "ari", 
+                  "Atlanta Braves": "atl",
+                  "Baltimore Orioles": "bal",
+                  "Boston Red Sox": "bos",
+                  "Chicago Cubs": "chn",
+                  "Chicago White Sox": "cha",
+                  "Cincinnati Reds": "cin",
+                  "Cleveland Guardians": "cle",
+                  "Colorado Rockies": "col",
+                  "Detroit Tigers": "det",
+                  "Miami Marlins": "mia",
+                  "Houston Astros": "hou",
+                  "Kansas City Royals": "kca",
+                  "Los Angeles Angels": "ana",
+                  "Los Angeles Dodgers": "lan",
+                  "Milwaukee Brewers": "mil",
+                  "Minnesota Twins": "min",
+                  "New York Mets": "nyn",
+                  "New York Yankees": "nya",
+                  "Athletics": "ath",
+                  "Philadelphia Phillies": "phi",
+                  "Pittsburgh Pirates": "pit",
+                  "San Diego Padres": "sdn",
+                  "San Francisco Giants": "sfn",
+                  "Seattle Mariners": "sea",
+                  "St. Louis Cardinals": "sln",
+                  "Tampa Bay Rays": "tba",
+                  "Texas Rangers": "tex",
+                  "Toronto Blue Jays": "tor",
+                  "Washington Nationals": "was"}
+    team_abr = {"Arizona Diamondbacks": "AZ", 
+                  "Atlanta Braves": "ATL",
+                  "Baltimore Orioles": "BAL",
+                  "Boston Red Sox": "BOS",
+                  "Chicago Cubs": "CHC",
+                  "Chicago White Sox": "CWS",
+                  "Cincinnati Reds": "CIN",
+                  "Cleveland Guardians": "CLE",
+                  "Colorado Rockies": "COL",
+                  "Detroit Tigers": "DET",
+                  "Miami Marlins": "MIA",
+                  "Houston Astros": "HOU",
+                  "Kansas City Royals": "KC",
+                  "Los Angeles Angels": "LAA",
+                  "Los Angeles Dodgers": "LAD",
+                  "Milwaukee Brewers": "MIL",
+                  "Minnesota Twins": "MIN",
+                  "New York Mets": "NYM",
+                  "New York Yankees": "NYY",
+                  "Athletics": "ATH",
+                  "Philadelphia Phillies": "PHI",
+                  "Pittsburgh Pirates": "PIT",
+                  "San Diego Padres": "SD",
+                  "San Francisco Giants": "SF",
+                  "Seattle Mariners": "SEA",
+                  "St. Louis Cardinals": "STL",
+                  "Tampa Bay Rays": "TB",
+                  "Texas Rangers": "TEX",
+                  "Toronto Blue Jays": "TOR",
+                  "Washington Nationals": "WSH"}
+    team_code = ""
+    team_name = ""
+    for key,value in team_abr.items():
+        if value == opponent_abr:
+            team_name = key
+            break
+    
+    for key, value in team_codes.items():
+        if key == team_name:
+            team_code = key
+            break
+    team = statsapi.lookup_team(team_code)
     team_name = team[0]['name']
     return team_name
 

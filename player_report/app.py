@@ -4,6 +4,38 @@ from roster import get_roster, get_pitchers
 from pitch_data import get_pitcher_id, get_pitcher_game_data, create_pitch_data_table, get_opponent
 import pandas as pd
 
+team_abr = {"Arizona Diamondbacks": "AZ", 
+                  "Atlanta Braves": "ATL",
+                  "Baltimore Orioles": "BAL",
+                  "Boston Red Sox": "BOS",
+                  "Chicago Cubs": "CHC",
+                  "Chicago White Sox": "CWS",
+                  "Cincinnati Reds": "CIN",
+                  "Cleveland Guardians": "CLE",
+                  "Colorado Rockies": "COL",
+                  "Detroit Tigers": "DET",
+                  "Miami Marlins": "MIA",
+                  "Houston Astros": "HOU",
+                  "Kansas City Royals": "KC",
+                  "Los Angeles Angels": "LAA",
+                  "Los Angeles Dodgers": "LAD",
+                  "Milwaukee Brewers": "MIL",
+                  "Minnesota Twins": "MIN",
+                  "New York Mets": "NYM",
+                  "New York Yankees": "NYY",
+                  "Athletics": "ATH",
+                  "Philadelphia Phillies": "PHI",
+                  "Pittsburgh Pirates": "PIT",
+                  "San Diego Padres": "SD",
+                  "San Francisco Giants": "SF",
+                  "Seattle Mariners": "SEA",
+                  "St. Louis Cardinals": "STL",
+                  "Tampa Bay Rays": "TB",
+                  "Texas Rangers": "TEX",
+                  "Toronto Blue Jays": "TOR",
+                  "Washington Nationals": "WSH"}
+
+
 ui.page_opts(title="Player Report", fillable=True)
 
 with ui.sidebar():
@@ -77,16 +109,31 @@ with ui.sidebar():
 @render.ui
 @reactive.event(input.get_data_button)
 def header():
-     date = str(input.game_date())
-     player_name = input.select_player()
-     parts = player_name.split()
-     firstName = parts[0]
-     lastName = parts[1]
-     pitcher_id = get_pitcher_id(firstName=firstName, lastName=lastName)
-     df = get_pitcher_game_data(pitcher_id=pitcher_id, startDate=date, endDate=date)
-     opponent_abr = df["away_team"][0]
-     opponent_name = get_opponent(opponent_abr=opponent_abr)
-     return ui.div(ui.h2(player_name), ui.h3(f"{date}"), ui.h4(f"Opponent: {opponent_name}"))
+    date = str(input.game_date())
+    player_name = input.select_player()
+    parts = player_name.split()
+    firstName = parts[0]
+    lastName = parts[1]
+    pitcher_id = get_pitcher_id(firstName=firstName, lastName=lastName)
+    df = get_pitcher_game_data(pitcher_id=pitcher_id, startDate=date, endDate=date)
+    if df is None or df.empty:
+        return ui.div(ui.h2(player_name), ui.h3(f"{date}"))
+    
+    opponent_abr = df["away_team"][0]
+    print(f"header: opponent_abr: {opponent_abr}")
+    temp = ""
+    selected_team = input.select_team()
+    print(f"header: selected_team: {selected_team}")
+    for key, value in team_abr.items():
+        if value == opponent_abr:
+            temp = key
+            break
+    print(f"header: temp: {temp}")
+    if selected_team == temp:
+         opponent_abr = df["home_team"][0]    
+    print(f"header: opponent_abr: {opponent_abr}")
+    opponent_name = get_opponent(opponent_abr=opponent_abr)
+    return ui.div(ui.h2(player_name), ui.h3(f"{date}"), ui.h4(f"Opponent: {opponent_name}"))
 
 @render.data_frame
 @reactive.event(input.get_data_button)
