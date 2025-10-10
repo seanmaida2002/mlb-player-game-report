@@ -3,6 +3,7 @@ from shiny.express import input, ui
 from roster import get_roster, get_pitchers
 from pitch_data import get_pitcher_id, get_pitcher_game_data, create_pitch_data_table, get_opponent
 import pandas as pd
+import seaborn as sns
 
 team_abr = {"Arizona Diamondbacks": "AZ", 
                   "Atlanta Braves": "ATL",
@@ -135,20 +136,44 @@ def header():
     opponent_name = get_opponent(opponent_abr=opponent_abr)
     return ui.div(ui.h2(player_name), ui.h3(f"{date}"), ui.h4(f"Opponent: {opponent_name}"))
 
-@render.data_frame
-@reactive.event(input.get_data_button)
-def data_table():
+
+with ui.layout_columns():
+    @reactive.calc
+    @reactive.event(input.get_data_button)
+    def pitcher_data():
+        date = str(input.game_date())
         player_name = input.select_player()
-        if player_name:
-            parts = player_name.split()
-            firstName = parts[0]
-            lastName = parts[1]
-            pitcher_id = get_pitcher_id(firstName=firstName, lastName=lastName)
-            date = str(input.game_date())
-            df = get_pitcher_game_data(pitcher_id=pitcher_id, startDate=date, endDate=date)
+        parts = player_name.split()
+        firstName = parts[0]
+        lastName = parts[1]
+        pitcher_id = get_pitcher_id(firstName=firstName, lastName=lastName)
+        df = get_pitcher_game_data(pitcher_id=pitcher_id, startDate=date, endDate=date)
+        return df
+    
+    with ui.card(full_screen=True):
+        @render.data_frame
+        # @reactive.event(input.get_data_button)
+        def data_table():
+            df = pitcher_data()
+            if df is None or df.empty:
+                return pd.DataFrame({"Message" : ["No data available"]})
             table = create_pitch_data_table(df=df)
             if table is None or table.empty:
-                 return pd.DataFrame({"Message" : ["No data available"]})
+                return pd.DataFrame({"Message" : ["No data available"]})
             return render.DataGrid(table)
-
+    
+    with ui.card(full_screen=True):
+        @render.plot(alt="A Seaborn Plot on player's pitch movement")
+        @reactive.event(input.get_data_button)
+        def pitch_movement_plot():
+            df = pitcher_data()
+            if df is None or df.empty:
+                return
+            ax = sns.lineplot(data=df, x=df['pfx_x'], y=df['pfx_z'], hue=df['pitch_type'], style=df['pitch_type'])
+            ax.axhline(0, color="gray", linestyle="--")
+            ax.axvline(0, color="gray", linestyle="--")
+            ax.set_xlabel("Horizontal Movement (ft)")
+            ax.set_ylabel("Vertical Movement (ft)")
+            ax.set_title("Pitch Movement")
+            return ax
 
