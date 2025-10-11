@@ -88,6 +88,7 @@ def get_pitcher_id(firstName, lastName):
 
 def get_pitcher_game_data(pitcher_id, startDate, endDate):
     statcast_pitcher_df = statcast_pitcher(startDate, endDate, pitcher_id)
+    statcast_pitcher_df['pitch_number'] = range(len(statcast_pitcher_df), 0, -1)
     return statcast_pitcher_df
 
 def get_strike_percentage(pitch_types_array, number_pitches, count_strikes):

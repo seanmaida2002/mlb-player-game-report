@@ -136,21 +136,21 @@ def header():
     opponent_name = get_opponent(opponent_abr=opponent_abr)
     return ui.div(ui.h2(player_name), ui.h3(f"{date}"), ui.h4(f"Opponent: {opponent_name}"))
 
+@reactive.calc
+@reactive.event(input.get_data_button)
+def pitcher_data():
+    date = str(input.game_date())
+    player_name = input.select_player()
+    parts = player_name.split()
+    firstName = parts[0]
+    lastName = parts[1]
+    pitcher_id = get_pitcher_id(firstName=firstName, lastName=lastName)
+    df = get_pitcher_game_data(pitcher_id=pitcher_id, startDate=date, endDate=date)
+    return df
 
+        
 with ui.layout_columns():
-    @reactive.calc
-    @reactive.event(input.get_data_button)
-    def pitcher_data():
-        date = str(input.game_date())
-        player_name = input.select_player()
-        parts = player_name.split()
-        firstName = parts[0]
-        lastName = parts[1]
-        pitcher_id = get_pitcher_id(firstName=firstName, lastName=lastName)
-        df = get_pitcher_game_data(pitcher_id=pitcher_id, startDate=date, endDate=date)
-        return df
-    
-    with ui.card(full_screen=True):
+    with ui.card():
         @render.data_frame
         # @reactive.event(input.get_data_button)
         def data_table():
@@ -161,15 +161,24 @@ with ui.layout_columns():
             if table is None or table.empty:
                 return pd.DataFrame({"Message" : ["No data available"]})
             return render.DataGrid(table)
-    
+        @render.plot(alt="A Plot on player's velocity")
+        def pitch_velocity_plot():
+            df = pitcher_data()
+            if df is None or df.empty:
+                return
+            ax = sns.scatterplot(data=df, x=df['pitch_number'], y=df['release_speed'], hue=df['pitch_type'], style=df['pitch_type'])
+            ax.set_xlabel("Pitch Count")
+            ax.set_ylabel("Pitch Velocity (MPH)")
+            ax.set_title("Pitch Velocity")
+   
     with ui.card(full_screen=True):
-        @render.plot(alt="A Seaborn Plot on player's pitch movement")
+        @render.plot(alt="A Plot on player's pitch movement")
         @reactive.event(input.get_data_button)
         def pitch_movement_plot():
             df = pitcher_data()
             if df is None or df.empty:
                 return
-            ax = sns.lineplot(data=df, x=df['pfx_x'], y=df['pfx_z'], hue=df['pitch_type'], style=df['pitch_type'])
+            ax = sns.scatterplot(data=df, x=df['pfx_x'], y=df['pfx_z'], hue=df['pitch_type'], style=df['pitch_type'])
             ax.axhline(0, color="gray", linestyle="--")
             ax.axvline(0, color="gray", linestyle="--")
             ax.set_xlabel("Horizontal Movement (ft)")
