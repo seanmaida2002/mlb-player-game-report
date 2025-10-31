@@ -2,5 +2,5 @@ shiny
 pandas
 seaborn
 pybaseball
-statsapi
-datetime
+MLB-StatsAPI
+DateTime
