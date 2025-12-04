@@ -5,6 +5,25 @@ from pitch_data import get_pitcher_id, get_pitcher_game_data, create_pitch_data_
 import pandas as pd
 import seaborn as sns
 
+
+def date_format(date):
+    dates = {"01": "January",
+             "02": "February",
+             "03": "March",
+             "04": "April",
+             "05": "May",
+             "06": "June",
+             "07": "July",
+             "08": "August",
+             "09": "September",
+             "10": "October",
+             "11": "November",
+             "12": "December"}
+    year, month_num, day = date.split("-")
+    day = str(int(day))
+    month = dates[month_num]
+    return f"{month} {day}, {year}"
+
 team_abr = {"Arizona Diamondbacks": "AZ", 
                   "Atlanta Braves": "ATL",
                   "Baltimore Orioles": "BAL",
@@ -37,7 +56,8 @@ team_abr = {"Arizona Diamondbacks": "AZ",
                   "Washington Nationals": "WSH"}
 
 
-ui.page_opts(title="Player Report", fillable=True)
+ui.page_opts(title="Player Report", theme=ui.Theme(preset="bootstrap"), fillable=True)
+
 
 with ui.sidebar():
     ui.input_select(
@@ -78,10 +98,10 @@ with ui.sidebar():
 
     ui.tags.style("""
         #submit_team_button:hover {
-            background-color: blue;  /* green background on hover */
-            color: white;               /* text color on hover */
-            cursor: pointer;            /* pointer cursor on hover */
-            transition: background-color 0.3s ease;  /* smooth transition */
+            background-color: blue;  
+            color: white;               
+            cursor: pointer;            
+            transition: background-color 0.3s ease;
         }
     """),
     ui.input_action_button(id="submit_team_button", label="Submit")
@@ -98,10 +118,10 @@ with ui.sidebar():
                     ui.input_date("game_date", ""),
                     ui.tags.style("""
                         #get_data_button:hover {
-                        background-color: blue;  /* green background on hover */
-                        color: white;               /* text color on hover */
-                        cursor: pointer;            /* pointer cursor on hover */
-                        transition: background-color 0.3s ease;  /* smooth transition */
+                        background-color: blue; 
+                        color: white;               
+                        cursor: pointer;           
+                        transition: background-color 0.3s ease;
                         }
                     """),
                     ui.input_action_button(id="get_data_button", label="Generate Report"))
@@ -111,6 +131,7 @@ with ui.sidebar():
 @reactive.event(input.get_data_button)
 def header():
     date = str(input.game_date())
+    date_formated = date_format(date)
     player_name = input.select_player()
     parts = player_name.split()
     firstName = parts[0]
@@ -121,20 +142,16 @@ def header():
         return ui.div(ui.h2(player_name), ui.h3(f"{date}"))
     
     opponent_abr = df["away_team"][0]
-    print(f"header: opponent_abr: {opponent_abr}")
     temp = ""
     selected_team = input.select_team()
-    print(f"header: selected_team: {selected_team}")
     for key, value in team_abr.items():
         if value == opponent_abr:
             temp = key
             break
-    print(f"header: temp: {temp}")
     if selected_team == temp:
          opponent_abr = df["home_team"][0]    
-    print(f"header: opponent_abr: {opponent_abr}")
     opponent_name = get_opponent(opponent_abr=opponent_abr)
-    return ui.div(ui.h2(player_name), ui.h3(f"{date}"), ui.h4(f"Opponent: {opponent_name}"))
+    return ui.div(ui.h2(player_name), ui.h3(f"{date_formated}"), ui.h4(f"Opponent: {opponent_name}"))
 
 @reactive.calc
 @reactive.event(input.get_data_button)
